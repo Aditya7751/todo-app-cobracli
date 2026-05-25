@@ -10,27 +10,56 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
+var (
+	showCompleted  bool
+	showPending    bool
+	filterPriority string
+)
+
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "to list down all tasks to to do",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "List all tasks",
+	Long:  `Lists tasks with optional filtering.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
 		table := tablewriter.NewWriter(os.Stdout)
-		table.Header([]string{"ID", "Description", "Created At", "Completed"})
+		table.Header([]string{
+			"ID",
+			"Description",
+			"Priority",
+			"Created At",
+			"Completed",
+		})
+
 		todos, err := storage.LoadTasks()
 		if err != nil {
 			fmt.Println("Error loading tasks:", err)
 			return
 		}
+
 		for _, t := range todos {
-			table.Append([]string{strconv.Itoa(t.ID), t.Description, t.CreatedAt.Format("2006-01-02 15:04:05"), strconv.FormatBool(t.Completed)})
+
+			if showCompleted && !t.Completed {
+				continue
+			}
+
+			if showPending && t.Completed {
+				continue
+			}
+
+			if filterPriority != "" && t.Priority != filterPriority {
+				continue
+			}
+
+			table.Append([]string{
+				strconv.Itoa(t.ID),
+				t.Description,
+				t.Priority,
+				t.CreatedAt.Format("2006-01-02 15:04:05"),
+				strconv.FormatBool(t.Completed),
+			})
 		}
+
 		table.Render()
 	},
 }
@@ -38,13 +67,25 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	// Here you will define your flags and configuration settings.
+	listCmd.Flags().BoolVar(
+		&showCompleted,
+		"done",
+		false,
+		"show only completed tasks",
+	)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
+	listCmd.Flags().BoolVar(
+		&showPending,
+		"pending",
+		false,
+		"show only pending tasks",
+	)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	listCmd.Flags().StringVarP(
+		&filterPriority,
+		"priority",
+		"p",
+		"",
+		"filter by priority (low, medium, high)",
+	)
 }

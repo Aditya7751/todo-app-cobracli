@@ -1,75 +1,94 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"go_stuff/storage"
-	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
 )
 
-// updateCmd represents the update command
+var (
+	description string
+	priority    string
+)
+
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "to update task description",
-	Long:  `Use in the format update id newDescription`,
+	Short: "Update task fields",
+	Long:  `Update task description or priority using flags.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
-			fmt.Println("Enter ID and New Description")
+
+		if len(args) < 1 {
+			fmt.Println("Enter task ID")
 			return
 		}
+
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Enter a Number for ID")
+			fmt.Println("Enter a valid numeric ID")
 			return
 		}
-		var newDescription string = args[1]
+
+		if description == "" && priority == "" {
+			fmt.Println("Provide at least one flag: --description or --priority")
+			return
+		}
+
 		todos, err := storage.LoadTasks()
 		if err != nil {
 			fmt.Println("Error loading tasks:", err)
 			return
 		}
-		var index int = -1
+
+		index := -1
+
 		for i, t := range todos {
 			if t.ID == id {
 				index = i
 				break
 			}
 		}
+
 		if index == -1 {
-			fmt.Println("ID not Found")
+			fmt.Println("Task ID not found")
 			return
 		}
-		todos[index].Description = newDescription
-		jsonData, err := json.MarshalIndent(todos, "", "")
+
+		if description != "" {
+			todos[index].Description = description
+		}
+
+		if priority != "" {
+			todos[index].Priority = priority
+		}
+
+		err = storage.SaveTasks(todos)
 		if err != nil {
-			fmt.Println("Error marshalling data:", err)
+			fmt.Println("Error saving tasks:", err)
 			return
 		}
-		err = os.WriteFile("data/todos.json", jsonData, 0666)
-		if err != nil {
-			fmt.Println("Error Writing Data")
-			return
-		}
-		fmt.Println("Task Updated Successfully")
+
+		fmt.Println("Task updated successfully")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(updateCmd)
 
-	// Here you will define your flags and configuration settings.
+	updateCmd.Flags().StringVarP(
+		&description,
+		"description",
+		"d",
+		"",
+		"new task description",
+	)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// updateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	updateCmd.Flags().StringVarP(
+		&priority,
+		"priority",
+		"p",
+		"",
+		"task priority",
+	)
 }

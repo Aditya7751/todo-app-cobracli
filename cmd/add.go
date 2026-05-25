@@ -31,7 +31,7 @@ var addCmd = &cobra.Command{
 			}
 		}
 		id := lastid + 1
-		newTask := models.Task{ID: id, Description: taskDescrption, CreatedAt: time.Now(), Completed: false}
+		newTask := models.Task{ID: id, Description: taskDescrption, CreatedAt: time.Now(), Completed: false, Priority: "medium"}
 		todos = append(todos, newTask)
 		err = storage.SaveTasks(todos)
 		if err != nil {

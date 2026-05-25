@@ -9,4 +9,5 @@ type Task struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	Completed   bool      `json:"completed"`
+	Priority    string    `json:"priority"`
 }
