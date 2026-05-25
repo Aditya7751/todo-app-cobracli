@@ -1,11 +1,13 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -13,15 +15,54 @@ import (
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "to update task description",
+	Long:  `Use in the format update id newDescription`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("update called")
+		if len(args) < 2 {
+			fmt.Println("Enter ID and New Description")
+			return
+		}
+		id, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Enter a Number for ID")
+		}
+		var newDescription string = args[1]
+		var found bool = false
+		data, err := os.ReadFile("data/todos.json")
+		if err != nil {
+			fmt.Println("Error loading todos.json file")
+			return
+		}
+		var todos []Task
+		err = json.Unmarshal(data, &todos)
+		if err != nil {
+			fmt.Println("Error Unmarshalling todos.json file")
+			return
+		}
+		var index int = -1
+		for i, t := range todos {
+			if t.ID == id {
+				index = i
+				found = true
+				break
+			}
+		}
+		if found == false || index == -1 {
+			fmt.Println("ID not Found")
+			return
+		}
+		todos[index].Description = newDescription
+		jsonData, err := json.MarshalIndent(todos, "", "")
+		if err != nil {
+			fmt.Println("Error marshalling data:", err)
+			return
+		}
+		err = os.WriteFile("data/todos.json", jsonData, 0666)
+		if err != nil {
+			fmt.Println("Error Writing Data")
+			return
+		}
+		fmt.Println("Task Updated Successfully")
 	},
 }
 
