@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
-var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "deletes tasks based on ID of the task",
+// doneCmd represents the done command
+var doneCmd = &cobra.Command{
+	Use:   "done",
+	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -22,51 +22,51 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("Provide ID to delete")
+		if len(args) != 1 {
+			fmt.Println("Please provide the ID of the task to mark as done")
 			return
 		}
-		deleteID, err := strconv.ParseInt(args[0], 10, 64)
+		id, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Println("Could Not Parse ID")
+			fmt.Println("Enter an Int ID")
 			return
 		}
 		todos, err := storage.LoadTasks()
 		if err != nil {
-			fmt.Println("Error loading tasks:", err)
+			fmt.Println("Error Loading Data")
 			return
 		}
-		var deleteIndex int = -1
+		index := -1
 		for i, t := range todos {
-			if t.ID == int(deleteID) {
-				deleteIndex = i
+			if t.ID == id {
+				index = i
 				break
 			}
 		}
-		if deleteIndex == -1 {
-			fmt.Println("Index Not Found")
+		if index == -1 {
+			fmt.Println("ID not Found")
 			return
 		}
-		todos = append(todos[:deleteIndex], todos[(deleteIndex+1):]...)
+		todos[index].Completed = true
 		err = storage.SaveTasks(todos)
 		if err != nil {
-			fmt.Println("Error saving tasks:", err)
+			fmt.Println("Error Saving Data")
 			return
 		}
-		fmt.Println("Successfully Deleted Data")
+		fmt.Println("Task Status Updated")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(deleteCmd)
+	rootCmd.AddCommand(doneCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// doneCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// doneCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

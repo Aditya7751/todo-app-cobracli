@@ -1,17 +1,8 @@
 [
-{
-"id": 1,
-"description": "Learning GO",
-"created_at": "2026-05-23T15:29:47.7909356+05:30"
-},
-{
-"id": 2,
-"description": "Leetcode",
-"created_at": "2026-05-23T15:29:50.4635003+05:30"
-},
-{
-"id": 3,
-"description": "Completing CLI App",
-"created_at": "2026-05-23T15:50:30.010917+05:30"
-}
+  {
+    "id": 1,
+    "description": "Neetcode Stacks",
+    "created_at": "2026-05-25T15:08:33.8358084+05:30",
+    "completed": false
+  }
 ]

@@ -1,19 +1,13 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
+	"go_stuff/models"
+	"go_stuff/storage"
 	"time"
 
 	"github.com/spf13/cobra"
 )
-
-type Task struct {
-	ID          int       `json:"id"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-}
 
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -25,15 +19,9 @@ var addCmd = &cobra.Command{
 			return
 		}
 		taskDescrption := args[0]
-		data, err := os.ReadFile("data/todos.json")
+		todos, err := storage.LoadTasks()
 		if err != nil {
-			fmt.Println("Error loading todos.json file")
-			return
-		}
-		var todos []Task
-		err = json.Unmarshal(data, &todos)
-		if err != nil {
-			fmt.Println("Error Unmarshalling todos.json file")
+			fmt.Println("Error loading tasks:", err)
 			return
 		}
 		var lastid int = 0
@@ -43,16 +31,11 @@ var addCmd = &cobra.Command{
 			}
 		}
 		id := lastid + 1
-		newTask := Task{ID: id, Description: taskDescrption, CreatedAt: time.Now()}
+		newTask := models.Task{ID: id, Description: taskDescrption, CreatedAt: time.Now(), Completed: false}
 		todos = append(todos, newTask)
-		jsonData, err := json.MarshalIndent(todos, "", "")
+		err = storage.SaveTasks(todos)
 		if err != nil {
-			fmt.Println("Error marshalling data:", err)
-			return
-		}
-		err = os.WriteFile("data/todos.json", jsonData, 0666)
-		if err != nil {
-			fmt.Println("Error Writing Data")
+			fmt.Println("Error saving tasks:", err)
 			return
 		}
 		fmt.Println("Task Added Successfully")

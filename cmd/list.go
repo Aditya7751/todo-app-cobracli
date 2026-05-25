@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
+	"go_stuff/storage"
 	"os"
 	"strconv"
 
@@ -22,20 +22,14 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		table := tablewriter.NewWriter(os.Stdout)
-		table.Header([]string{"ID", "Description", "Created At"})
-		data, err := os.ReadFile("data/todos.json")
+		table.Header([]string{"ID", "Description", "Created At", "Completed"})
+		todos, err := storage.LoadTasks()
 		if err != nil {
-			fmt.Println("Error while reading todos.json")
-			return
-		}
-		var todos []Task
-		err = json.Unmarshal(data, &todos)
-		if err != nil {
-			fmt.Println("Error While Unmarshalling Data")
+			fmt.Println("Error loading tasks:", err)
 			return
 		}
 		for _, t := range todos {
-			table.Append([]string{strconv.Itoa(t.ID), t.Description, t.CreatedAt.Format("2006-01-02 15:04:05")})
+			table.Append([]string{strconv.Itoa(t.ID), t.Description, t.CreatedAt.Format("2006-01-02 15:04:05"), strconv.FormatBool(t.Completed)})
 		}
 		table.Render()
 	},

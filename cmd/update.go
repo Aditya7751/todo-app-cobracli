@@ -6,6 +6,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"go_stuff/storage"
 	"os"
 	"strconv"
 
@@ -25,29 +26,22 @@ var updateCmd = &cobra.Command{
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println("Enter a Number for ID")
-		}
-		var newDescription string = args[1]
-		var found bool = false
-		data, err := os.ReadFile("data/todos.json")
-		if err != nil {
-			fmt.Println("Error loading todos.json file")
 			return
 		}
-		var todos []Task
-		err = json.Unmarshal(data, &todos)
+		var newDescription string = args[1]
+		todos, err := storage.LoadTasks()
 		if err != nil {
-			fmt.Println("Error Unmarshalling todos.json file")
+			fmt.Println("Error loading tasks:", err)
 			return
 		}
 		var index int = -1
 		for i, t := range todos {
 			if t.ID == id {
 				index = i
-				found = true
 				break
 			}
 		}
-		if found == false || index == -1 {
+		if index == -1 {
 			fmt.Println("ID not Found")
 			return
 		}
